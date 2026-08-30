@@ -565,3 +565,108 @@ FROM demo_data_reliability_metrics
 ORDER BY run_timestamp DESC;
 # COMMAND ----------
 
+# ============================================================
+# CELL 9 — DATA VOLUME ANOMALY DETECTION
+# ============================================================
+
+from pyspark.sql.functions import col, avg, lit, current_timestamp
+
+# ------------------------------------------------------------
+# 1. Current run source count
+# ------------------------------------------------------------
+
+current_source_count = source_count
+
+# ------------------------------------------------------------
+# 2. Get previous 7 runs as baseline
+# ------------------------------------------------------------
+
+history_df = (
+    spark.table("demo_reconciliation_run_history")
+    .orderBy(col("run_timestamp").desc())
+    .limit(7)
+)
+
+historical_avg = (
+    history_df
+    .select(avg("source_count").alias("avg_source_count"))
+    .collect()[0]["avg_source_count"]
+)
+
+# ------------------------------------------------------------
+# 3. Check whether baseline exists
+# ------------------------------------------------------------
+
+if historical_avg is None:
+
+    volume_status = "NO_BASELINE"
+    deviation_percent = None
+
+else:
+
+    deviation_percent = (
+        abs(current_source_count - historical_avg)
+        / historical_avg
+    ) * 100
+
+    # 20% deviation threshold
+    if deviation_percent > 20:
+        volume_status = "ANOMALY"
+    else:
+        volume_status = "NORMAL"
+
+# ------------------------------------------------------------
+# 4. Display result
+# ------------------------------------------------------------
+
+print("===== DATA VOLUME ANOMALY CHECK =====")
+
+print(f"Current Source Records : {current_source_count}")
+
+if historical_avg is not None:
+    print(f"7-Run Average          : {historical_avg:.2f}")
+    print(f"Deviation               : {deviation_percent:.2f}%")
+
+print(f"Volume Status           : {volume_status}")
+
+# ------------------------------------------------------------
+# 5. Create volume reliability result
+# ------------------------------------------------------------
+
+volume_result = [{
+    "current_source_count": int(current_source_count),
+    "historical_average": (
+        float(historical_avg)
+        if historical_avg is not None
+        else None
+    ),
+    "deviation_percent": (
+        float(deviation_percent)
+        if deviation_percent is not None
+        else None
+    ),
+    "volume_status": volume_status
+}]
+
+df_volume_anomaly = (
+    spark.createDataFrame(volume_result)
+    .withColumn("run_timestamp", current_timestamp())
+)
+
+display(df_volume_anomaly)
+
+# ------------------------------------------------------------
+# 6. Persist volume anomaly result
+# ------------------------------------------------------------
+
+VOLUME_ANOMALY_TABLE = "demo_volume_anomaly_history"
+
+(
+    df_volume_anomaly.write
+    .format("delta")
+    .mode("append")
+    .option("mergeSchema", "true")
+    .saveAsTable(VOLUME_ANOMALY_TABLE)
+)
+
+print(f"Volume anomaly history written to: {VOLUME_ANOMALY_TABLE}")
