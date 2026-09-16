@@ -1,96 +1,163 @@
-\# Databricks Data Reliability Framework
+# Data Reliability & Reconciliation Framework
 
+## Overview
 
+The Data Reliability & Reconciliation Framework is a reusable framework designed to validate source data, perform data quality checks, reconcile source and target data, identify detailed data mismatches, determine overall data reliability, and maintain auditability.
 
-\## Overview
+This project enhances the previous Data Quality POC into a structured and customer-demo-ready framework.
 
+## Objective
 
+The objective is to provide a reusable approach for identifying data quality and reconciliation issues and determining whether data can be trusted for downstream consumption.
 
-This project demonstrates a data reliability framework for transaction data received from an API using Databricks and PySpark.
+## Framework Flow
 
+Source / API
+    ↓
+01. Ingestion
+    ↓
+02. Data Quality
+    ↓
+03. Reconciliation
+    ↓
+04. Reliability Decision
+    ↓
+05. Audit
+    ↓
+06. Demo Scenarios
 
+## Framework Components
 
-\## Framework Flow
+### 01 - Ingestion
 
+- API/source data ingestion
+- Schema validation
+- Data standardization
+- Pipeline/run identification
 
+### 02 - Data Quality
 
-API Ingestion
+- Data quality validation
+- Valid record processing
+- Invalid record identification
+- Quarantine processing
+- Duplicate and data-format validation
 
-→ Data Standardization
+### 03 - Reconciliation
 
-→ Data Quality Validation
+The reconciliation engine provides configurable source-to-target validation including:
 
-→ Duplicate Detection
+- Record count reconciliation
+- Business key reconciliation
+- Missing record detection
+- Extra record detection
+- Amount reconciliation
+- Configurable amount tolerance
+- Critical field validation
+- Duplicate target key detection
 
-→ Valid / Quarantine
+### Detailed Mismatch Framework
 
-→ Reliability Metrics
+The framework captures detailed mismatch information including:
 
-→ Data Reconciliation
+- Run ID
+- Business key
+- Check type
+- Reason code
+- Column name
+- Source value
+- Target value
+- Difference
+- Timestamp
 
-→ Audit and Run History
+Example reason codes:
 
+- TARGET_MISSING
+- TARGET_EXTRA
+- AMOUNT_MISMATCH
+- FIELD_VALUE_MISMATCH
+- DUPLICATE_TARGET_KEY
 
+### 04 - Reliability Decision
 
-\## Data Quality Checks
+The Reliability Decision Engine combines data quality and reconciliation results to determine an overall data reliability status.
 
+Reliability statuses:
 
+- PASS
+- AT_RISK
+- FAIL
 
-\- Duplicate transaction IDs
+The decision also provides the reason behind the reliability status.
 
-\- Negative or zero transaction amounts
+### 05 - Audit
 
-\- Null transaction IDs
+The audit layer provides run-level traceability and captures:
 
-\- Null account IDs
+- Run information
+- DQ status
+- Reconciliation results
+- Reliability status
+- Reliability score
+- Reliability reason
+- Mismatch information
 
-\- Invalid transaction dates
+### 06 - Demo Scenarios
 
-\- Date format standardization
+Planned customer demonstration scenarios include:
 
+1. Healthy data
+2. Data quality failure
+3. Amount mismatch
+4. Missing/extra records
+5. Critical field mismatch
+6. Duplicate target key
 
+## Technology Stack
 
-\## Outputs
+- Databricks
+- PySpark
+- Delta Lake
+- Azure Functions
+- Azure Data Factory
+- API-based ingestion
 
+## Current Milestone
 
+### Completed
 
-\- Valid transaction records
+- API ingestion
+- Schema validation
+- Data standardization
+- Data quality checks
+- Valid/quarantine processing
+- Count reconciliation
+- Business key reconciliation
+- Missing/extra detection
+- Amount reconciliation
+- Critical field validation
+- Duplicate target key detection
+- Detailed mismatch framework
+- Unified reconciliation results
+- Framework notebook structure
 
-\- Quarantined transaction records
+### In Progress
 
-\- Data reliability metrics
+- Reliability Decision Engine
+- Audit integration
+- Customer demo scenarios
+- Final documentation
 
-\- Reconciliation audit results
+### Planned
 
-\- Run-level reconciliation history
+- GitHub packaging
+- Final validation and testing
+- Customer-demo-ready final version
 
+## Final Goal
 
+The final goal is to demonstrate an end-to-end data reliability process:
 
-\## Security
+Ingest → Validate → Quarantine → Reconcile → Identify Issues → Explain Why → Determine Reliability → Audit
 
-
-
-API credentials are retrieved securely from Databricks Secret Scope.
-
-
-
-No API keys or credentials are stored in the source code.
-
-
-
-\## Future Extensions
-
-
-
-\- Record-level reconciliation
-
-\- Source-to-target comparison
-
-\- Historical data comparison
-
-\- Data change detection
-
-\- Automated alerting
-
-\- Monitoring and dashboards
-
+The framework is intended to move beyond basic PASS/FAIL validation by providing actionable mismatch information and an overall view of data reliability.
