@@ -148,12 +148,6 @@ Planned customer demonstration scenarios include:
 - Customer demo scenarios
 - Final documentation
 
-### Planned
-
-- GitHub packaging
-- Final validation and testing
-- Customer-demo-ready final version
-
 ## Final Goal
 
 The final goal is to demonstrate an end-to-end data reliability process:
